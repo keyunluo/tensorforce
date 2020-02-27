@@ -1,4 +1,4 @@
-# Copyright 2017 reinforce.io. All Rights Reserved.
+# Copyright 2018 Tensorforce Team. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,50 +14,40 @@
 # ==============================================================================
 
 from functools import partial
+
 from tensorforce.core.optimizers.optimizer import Optimizer
+
 from tensorforce.core.optimizers.meta_optimizer import MetaOptimizer
-from tensorforce.core.optimizers.global_optimizer import GlobalOptimizer
-from tensorforce.core.optimizers.tf_optimizer import TFOptimizer
+
+from tensorforce.core.optimizers.clipping_step import ClippingStep
 from tensorforce.core.optimizers.evolutionary import Evolutionary
-from tensorforce.core.optimizers.natural_gradient import NaturalGradient
-from tensorforce.core.optimizers.clipped_step import ClippedStep
+from tensorforce.core.optimizers.global_optimizer import GlobalOptimizer
+from tensorforce.core.optimizers.meta_optimizer_wrapper import MetaOptimizerWrapper
 from tensorforce.core.optimizers.multi_step import MultiStep
-from tensorforce.core.optimizers.optimized_step import OptimizedStep
+from tensorforce.core.optimizers.natural_gradient import NaturalGradient
+from tensorforce.core.optimizers.optimizing_step import OptimizingStep
+from tensorforce.core.optimizers.plus import Plus
 from tensorforce.core.optimizers.subsampling_step import SubsamplingStep
 from tensorforce.core.optimizers.synchronization import Synchronization
+from tensorforce.core.optimizers.tf_optimizer import TFOptimizer, tensorflow_optimizers
 
 
-# This can register any class inheriting from tf.train.Optimizer
-optimizers = dict(
-    global_optimizer=GlobalOptimizer,
-    adadelta=partial(TFOptimizer, 'adadelta'),
-    adagrad=partial(TFOptimizer, 'adagrad'),
-    adam=partial(TFOptimizer, 'adam'),
-    nadam=partial(TFOptimizer, 'nadam'),
-    gradient_descent=partial(TFOptimizer, 'gradient_descent'),
-    momentum=partial(TFOptimizer, 'momentum'),
-    rmsprop=partial(TFOptimizer, 'rmsprop'),
-    evolutionary=Evolutionary,
-    natural_gradient=NaturalGradient,
-    clipped_step=ClippedStep,
-    multi_step=MultiStep,
-    optimized_step=OptimizedStep,
-    subsampling_step=SubsamplingStep,
-    synchronization=Synchronization
+optimizer_modules = dict(
+    clipping_step=ClippingStep, default=MetaOptimizerWrapper, evolutionary=Evolutionary,
+    global_optimizer=GlobalOptimizer, meta_optimizer_wrapper=MetaOptimizerWrapper,
+    multi_step=MultiStep, natural_gradient=NaturalGradient, optimizing_step=OptimizingStep,
+    plus=Plus, subsampling_step=SubsamplingStep, synchronization=Synchronization,
+    tf_optimizer=TFOptimizer
 )
 
 
+for name, optimizer in tensorflow_optimizers.items():
+    assert name not in optimizer_modules
+    optimizer_modules[name] = partial(TFOptimizer, optimizer=name)
+
+
 __all__ = [
-    'optimizers',
-    'Optimizer',
-    'MetaOptimizer',
-    'GlobalOptimizer',
-    'TFOptimizer',
-    'Evolutionary',
-    'NaturalGradient',
-    'ClippedStep',
-    'MultiStep',
-    'OptimizedStep',
-    'SubsamplingStep',
-    'Synchronization'
+    'ClippingStep', 'Evolutionary', 'GlobalOptimizer', 'MetaOptimizer', 'MetaOptimizerWrapper',
+    'MultiStep', 'NaturalGradient', 'OptimizingStep', 'Optimizer', 'optimizer_modules', 'Plus',
+    'SubsamplingStep', 'Synchronization', 'TFOptimizer'
 ]
